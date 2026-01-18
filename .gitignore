@@ -1,0 +1,57 @@
+# 1. البيئة والمتغيرات
+venv/
+env/
+.venv/
+.env
+.env.local
+
+# 2. بايثون
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.python-version
+
+# 3. FAISS والـ Embedding
+*.faiss
+*.index
+faiss_index/
+vector_store/
+
+# 4. MLflow (كله لا ترفعه)
+mlflow.db
+mlruns/
+.mlflow/
+metadata.json  # إذا كان تابع لـ MLflow
+
+# 5. الموديلات
+models/
+*.pkl
+*.joblib
+*.h5
+*.keras
+*.pt
+*.bin
+
+# 6. الاختبارات
+.pytest_cache/
+.coverage
+htmlcov/
+.coverage.*
+
+# 7. ملفات مؤقتة
+temp/
+tmp/
+uploads/
+*.log
+logs/
+
+# 8. أنظمة التشغيل
+.DS_Store
+Thumbs.db
+
+# 9. الـ IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
