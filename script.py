@@ -61,10 +61,3 @@ log_artifact_metadatas("metadata.json")
 
 
 end_run()
-
-
-from groq import Groq
-
-client = Groq(api_key="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")
-
-print(client.models.list())
