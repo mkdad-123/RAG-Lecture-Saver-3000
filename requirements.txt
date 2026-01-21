@@ -10,3 +10,4 @@ pytest
 groq
 docling
 langchain-text-splitters
+streamlit

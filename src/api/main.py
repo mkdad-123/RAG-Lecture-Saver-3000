@@ -13,7 +13,6 @@ from src.services.rag_service import RAGService
 async def lifespan(app: FastAPI):
     
     # -------- STARTUP --------
-    embedding_model_name = "all-MiniLM-L6-v2"
     faiss_path = Path("faiss.index")
     metadata_path = Path("metadata.json")
 
@@ -23,7 +22,7 @@ async def lifespan(app: FastAPI):
     if not metadata_path.exists():
         raise RuntimeError("Metadata not found")
 
-    app.state.embedder = EmbeddingModel(embedding_model_name)
+    app.state.embedder = EmbeddingModel()
 
     index = faiss.read_index(str(faiss_path))
     store = VectorStore(dim=index.d)
