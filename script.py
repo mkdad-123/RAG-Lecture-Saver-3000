@@ -31,9 +31,9 @@ for doc in documents :
         })
         i+=1
     
-model_name = "paraphrase-multilingual-mpnet-base-v2"
+model_name = "paraphrase-multilingual-MiniLM-L12-v2"
 
-embedder = EmbeddingModel(model_name)
+embedder = EmbeddingModel()
 vectors = embedder.encode(all_chunks)
 
 store = VectorStore(dim=vectors.shape[1])
@@ -61,3 +61,10 @@ log_artifact_metadatas("metadata.json")
 
 
 end_run()
+
+
+from groq import Groq
+
+client = Groq(api_key="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")
+
+print(client.models.list())
