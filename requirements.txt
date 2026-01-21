@@ -8,3 +8,5 @@ mlflow
 pdfplumber
 pytest
 groq
+docling
+langchain-text-splitters

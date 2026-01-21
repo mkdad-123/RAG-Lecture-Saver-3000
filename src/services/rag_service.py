@@ -1,6 +1,9 @@
+from embedding.embeddings import EmbeddingModel
 from generation.llm_client import LLMClient
 from core.exceptions import *
 import time
+from evaluation.relevance import context_relevance
+from evaluation.faithfulness import faithfulness_score
 from src.mlops.tracking import (
     init_mlflow,
     start_rag_run,
@@ -10,7 +13,7 @@ from src.mlops.tracking import (
 )
 
 class RAGService:
-    def __init__(self, store, embedder):
+    def __init__(self, store, embedder :EmbeddingModel):
         self.store = store
         self.embedder = embedder
         self.llm = LLMClient()
@@ -30,8 +33,10 @@ class RAGService:
 
             # --- Retrieval ---
             start_ret = time.time()
+
             query_vector = self.embedder.encode([question])
             retrieved_docs = self.store.search(query_vector, k=k)
+
             retrieval_latency = (time.time() - start_ret) * 1000
 
             # --- Validation ---
@@ -56,6 +61,21 @@ class RAGService:
             generation_latency = (time.time() - start_gen) * 1000
 
             total_latency = (time.time() - start_total) * 1000
+
+            # --- Evaluation ---
+            
+            query_emd = query_vector
+            chunk_emd = self.embedder.encode([doc["text"] for doc in retrieved_docs])
+
+            relevance = context_relevance(query_emd,chunk_emd)
+            combined_context = "\n".join([doc['text'] for doc in retrieved_docs])
+
+            faithfulness =  faithfulness_score(combined_context , answer)
+            
+            log_metrics_dict({
+                "context_relevance": relevance,
+                "faithfulness" : faithfulness
+            })
 
             # --- Citations ---
             citations = {

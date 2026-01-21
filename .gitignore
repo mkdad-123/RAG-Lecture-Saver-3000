@@ -16,7 +16,6 @@ __pycache__/
 *.faiss
 *.index
 faiss_index/
-vector_store/
 
 # 4. MLflow (كله لا ترفعه)
 mlflow.db

@@ -1,14 +1,14 @@
 from pathlib import Path
 from src.ingestion.document_loader import load_documents
-from src.preprocessing.chunker import  chunk_text
+from src.preprocessing.chunker_markdown import chunk_document
 from src.embedding.embeddings import EmbeddingModel
 from src.vector_store.FAISS_store import VectorStore
 from src.mlops.tracking import *
 import json
 
-DATA_PATH = Path("C:/Users/Lenovo/Desktop/Homework_ The Lecture-Saver 3000.pdf")
+DATA_PATH = Path("C:/Users/Lenovo/Desktop/ISS_lectures/parctical-data-security-lec-1.pdf")
 
-start_experiment("nlp_rag_pipeline")
+start_experiment("paraphrase-multilingual-mpnet-base-v2 exeriment")
 
 documents = load_documents(DATA_PATH)
 
@@ -19,7 +19,7 @@ all_metadatas = []
 
 i = 0
 for doc in documents :
-    page_chunks = chunk_text(doc['text'], chunk_size=chunk_size, overlap=overlap)
+    page_chunks = chunk_document(doc["text"], chunk_size, overlap)
     
     for chunk in page_chunks:
         all_chunks.append(chunk)
@@ -31,8 +31,9 @@ for doc in documents :
         })
         i+=1
     
+model_name = "paraphrase-multilingual-mpnet-base-v2"
 
-embedder = EmbeddingModel()
+embedder = EmbeddingModel(model_name)
 vectors = embedder.encode(all_chunks)
 
 store = VectorStore(dim=vectors.shape[1])
@@ -43,13 +44,13 @@ store.add(vectors, all_metadatas)
 with open("metadata.json", "w", encoding="utf-8") as f:
     json.dump(store.metadata, f, ensure_ascii=False, indent=2)
 
-log_params({
+log_params_dict({
     "chunk_size": chunk_size,
     "overlap": overlap,
-    "embedding_model": "all-MiniLM-L6-v2"
+    "embedding_model": model_name
 })
 
-log_metrics({
+log_metrics_dict({
     "num_chunks": len(all_chunks),
     "embedding_dim": vectors.shape[1]
 })

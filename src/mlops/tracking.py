@@ -29,6 +29,12 @@ def log_metrics_dict(metrics: dict):
 def log_text_artifact(text: str, artifact_path: str):
     mlflow.log_text(text, artifact_path)
 
+def log_faiss_index(index, path: Path):
+    faiss.write_index(index, str(path))
+    mlflow.log_artifact(str(path))
+
+def log_artifact_metadatas(metadatas: Path ="metadata.json"): 
+    mlflow.log_artifact(str(metadatas))
 
 
 def end_run():
