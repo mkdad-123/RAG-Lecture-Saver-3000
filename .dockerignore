@@ -1,0 +1,38 @@
+# Environment & secrets
+.env
+.env.*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Git
+.git/
+.gitignore
+
+# Tests & local tooling
+tests/
+.pytest_cache/
+
+# Local experiment tracking
+mlflow.db
+mlruns/
+
+# Dev & notebooks
+*.ipynb
+
+# OS files
+.DS_Store
+
+# Streamlit (not used in production)
+.streamlit/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+models/
+tests/

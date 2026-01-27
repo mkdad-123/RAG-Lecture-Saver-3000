@@ -25,8 +25,8 @@ MIN_CHUNK_LENGTH = 40  # لمنع chunks ضعيفة دلاليًا
 # --------------------------------------
 def chunk_document(
     document: Dict,
-    chunk_size: int = 400,
-    overlap: int = 50,
+    chunk_size: int = 800,
+    overlap: int = 100,
 ) -> List[str]:
     """
     Final structure-aware chunking for Markdown (Docling output)
