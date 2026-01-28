@@ -3,7 +3,7 @@ import numpy as np
 from typing import List
 
 class EmbeddingModel:
-    def __init__(self , model_name:str = "./models/paraphrase-multilingual-MiniLM-L12-v2"):
+    def __init__(self , model_name:str = "paraphrase-multilingual-MiniLM-L12-v2"):
         self.model_name = model_name
         self.model = SentenceTransformer(
             model_name)
