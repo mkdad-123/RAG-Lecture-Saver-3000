@@ -15,10 +15,9 @@ logger = logging.getLogger(__name__)
 class MarkdownLoader:
     def __init__(self):
         options = PdfPipelineOptions()
-        options.do_ocr = False           # تعطيل التعرف الضوئي
-        options.do_table_structure = True # تفعيل تحليل الجداول
+        options.do_ocr = False           
+        options.do_table_structure = True 
 
-        # 2. تمرير الخيارات عبر PdfFormatOption داخل قاموس format_options
         self.converter = DocumentConverter(
             format_options={
                 "pdf": PdfFormatOption(pipeline_options=options)
@@ -27,10 +26,8 @@ class MarkdownLoader:
 
 
     def get_element_markdown(self, element) -> str:
-        """تحويل العنصر إلى Markdown بناءً على نوعه """
 
         if isinstance(element, TableItem):
-            # الجداول لا تزال تدعم التصدير للـ markdown في أغلب الإصدارات
             try:
                 return element.export_to_markdown()
             except:
@@ -39,7 +36,6 @@ class MarkdownLoader:
         elif isinstance(element, TextItem):
             text = element.text
             label = element.label
-            # إضافة وسوم Markdown بناءً على تسمية العنصر
             if label == DocItemLabel.TITLE:
                 return f"# {text}"
             elif label == DocItemLabel.SECTION_HEADER:
@@ -60,13 +56,10 @@ class MarkdownLoader:
             
             pages_content = {}
 
-            # iterate_items تعيد (العنصر، المستوى)
             for element, level in doc.iterate_items():
-                # الحصول على رقم الصفحة من الـ provenance
                 if hasattr(element, 'prov') and element.prov:
                     page_no = element.prov[0].page_no
                     
-                    # تحويل العنصر لنص Markdown
                     element_md = self.get_element_markdown(element)
                     
                     if element_md:
@@ -77,7 +70,6 @@ class MarkdownLoader:
             for page_number in sorted(pages_content.keys()):
                 raw_text = "\n\n".join(pages_content[page_number])
                 
-                # # طبقة المعالجة
                 final_text = normalize_text(raw_text)
                 
                 if final_text.strip():

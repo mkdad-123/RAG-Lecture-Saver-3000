@@ -17,11 +17,11 @@ HEADERS_TO_SPLIT_ON = [
 
 SEPARATORS = ["\n\n", "\n", " ", ""]
 
-MIN_CHUNK_LENGTH = 40  # لمنع chunks ضعيفة دلاليًا
+MIN_CHUNK_LENGTH = 40  
 
 
 # --------------------------------------
-# Main API (متوافق مع كودك)
+# Main API 
 # --------------------------------------
 def chunk_document(
     document: Dict,
@@ -42,7 +42,7 @@ def chunk_document(
         }
 
     Output:
-        List[str]  # فقط النصوص (كما يتوقع كود التدريب)
+        List[str]  
     """
 
     text = document
@@ -68,7 +68,7 @@ def chunk_document(
         section_text = section.page_content.strip()
 
         # -----------------------------
-        # Noise filtering (مهم)
+        # Noise filtering 
         # -----------------------------
         if _is_noise(section_text):
             continue

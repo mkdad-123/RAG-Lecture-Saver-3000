@@ -1,4 +1,4 @@
-from generation.llm_client import LLMClient
+from src.generation.llm_client import LLMClient
 
 llm = LLMClient()
 

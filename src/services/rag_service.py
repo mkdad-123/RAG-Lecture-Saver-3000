@@ -1,158 +1,85 @@
-from embedding.embeddings import EmbeddingModel
-from generation.llm_client import LLMClient
-from core.exceptions import *
-import time
-from evaluation.relevance import context_relevance
-from evaluation.faithfulness import faithfulness_score
-from src.mlops.tracking import (
-    init_mlflow,
-    start_rag_run,
-    log_params_dict,
-    log_metrics_dict,
-    log_text_artifact
-)
+from src.embedding.embeddings import EmbeddingModel
+from src.generation.llm_client import LLMClient
+import asyncio
+import logging
+
+logger = logging.getLogger("rag-service")
 
 class RAGService:
     def __init__(self, store, embedder :EmbeddingModel):
         self.store = store
         self.embedder = embedder
         self.llm = LLMClient()
-        init_mlflow("Lecture-Saver-3000")
 
     async def answer_question(self, question: str, k: int = 5):
-        with start_rag_run():
+        
+            if not question or len(question.strip()) == 0:
+                 return {
+                      "status": "error",
+                      "message" : "Empty question"
+                 }
+            
+            # Basic safety limit
+            if len(question) > 2000:
+                 return {
+                      "status" : "error",
+                      "message" : "Question too long"
+                 }
 
-            log_params_dict({
-                "top_k": k,
-                "embedding_model": self.embedder.model_name,
-                "llm_model": self.llm.model,
-                "question_language": "ar" if any("\u0600" <= c <= "\u06FF" for c in question) else "en"
-            })
+            try:
 
-            start_total = time.time()
+                # --- Retrieval ---
+                query_vector = self.embedder.encode([question])
+                retrieved_docs = self.store.search(query_vector, k=k)
 
-            # --- Retrieval ---
-            start_ret = time.time()
+                if not retrieved_docs:
+                
+                    return {
+                        "status": "success",
+                        "answer": "Not found in the provided lecture material.",
+                        "citations": {}
+                    }
 
-            query_vector = self.embedder.encode([question])
-            retrieved_docs = self.store.search(query_vector, k=k)
+                # --- Generation ---
+                context_chunks = [
+                    f"[{i+1}] {doc['text']}"
+                    for i, doc in enumerate(retrieved_docs)
+                ]
 
-            retrieval_latency = (time.time() - start_ret) * 1000
-
-            # --- Validation ---
-            if not retrieved_docs:
-                log_metrics_dict({
-                    "retrieval_latency_ms": retrieval_latency,
-                    "num_retrieved_chunks": 0
-                })
-                return {
-                    "status": "success",
-                    "answer": "Not found in the provided lecture material.",
-                    "citations": {}
+                try:  
+                    answer = await asyncio.wait_for(
+                        self.llm.generate(question, context_chunks),
+                        timeout=20
+                    )
+                except asyncio.TimeoutError:
+                    logger.warning("LLM timout")
+                    return {
+                        "status" : "error",
+                        "error_type": "LLMTimeout",
+                        "message" : "LLM generation timed out"
+                    }
+            
+                
+                # --- Citations ---
+                citations = {
+                    str(i+1): doc["citation"]
+                    for i, doc in enumerate(retrieved_docs)
                 }
 
-            # --- Generation ---
-            start_gen = time.time()
-            context_chunks = [
-                f"[{i+1}] {doc['text']}"
-                for i, doc in enumerate(retrieved_docs)
-            ]
-            answer = self.llm.generate(question, context_chunks)
-            generation_latency = (time.time() - start_gen) * 1000
 
-            total_latency = (time.time() - start_total) * 1000
+                # --- Logging ---
+                
+                return {
+                    "status": "success",
+                    "answer": answer,
+                    "citations": citations
+                }
 
-            # --- Evaluation ---
-            
-            query_emd = query_vector
-            chunk_emd = self.embedder.encode([doc["text"] for doc in retrieved_docs])
-
-            relevance = context_relevance(query_emd,chunk_emd)
-            combined_context = "\n".join([doc['text'] for doc in retrieved_docs])
-
-            faithfulness =  faithfulness_score(combined_context , answer)
-            
-            log_metrics_dict({
-                "context_relevance": relevance,
-                "faithfulness" : faithfulness
-            })
-
-            # --- Citations ---
-            citations = {
-                str(i+1): doc["citation"]
-                for i, doc in enumerate(retrieved_docs)
-            }
-
-            # --- Logging ---
-            log_metrics_dict({
-                "retrieval_latency_ms": retrieval_latency,
-                "generation_latency_ms": generation_latency,
-                "total_latency_ms": total_latency,
-                "num_retrieved_chunks": len(retrieved_docs),
-                "answer_length_chars": len(answer)
-            })
-
-            log_text_artifact(answer, "answer.txt")
-            log_text_artifact(str(citations), "citations.json")
-
-            return {
-                "status": "success",
-                "answer": answer,
-                "citations": citations
-            }
-
-
-# class RAGService:
-#     def __init__(self, store, embedder):
-#         self.store = store
-#         self.embedder = embedder
-#         self.llm = LLMClient()
-
- 
-#     async def answer_question(self, question: str, k: int = 5):
-#         try:
-            
-#             # --- Retrieval ---
-#             try:
-#                 query_vector = self.embedder.encode([question])
-#                 retrieved_docs = self.store.search(query_vector, k=k)
-#             except Exception as e:
-#                 #  Rollback
-#                 raise RetrievalError(f"Retrieval data has been failed: {str(e)}")
-
-#             # --- Validation ---
-#             if not retrieved_docs:
-#                 return {
-#                     "status": "success",
-#                     "answer": "Not found in the provided lecture material.",
-#                     "citations": []
-#                 }
-#             # --- Generation ---
-#             try:
-#                 context_chunks = [
-#                     f"[{i+1}] {doc['text']}"
-#                     for i, doc in enumerate(retrieved_docs)
-#                 ]
-
-#                 answer = self.llm.generate(question=question, context_chunks=context_chunks)
-#             except Exception as e:
-#                 raise LLMGenerationError(f"Answer has not been generated by LLM : {str(e)}")
-
-#             # --- Citations ---
-#             citations = {
-#                 str(i+1): doc["citation"]
-#                 for i, doc in enumerate(retrieved_docs)
-#             }
-#             return {    
-#                 "status": "success",
-#                 "answer": answer,
-#                 "citations": citations
-#             }
-
-#         except RAGException as e:
-
-#             return {
-#                 "status": "error",
-#                 "error_type": e.__class__.__name__,
-#                 "message": str(e)
-#             }
+            except Exception as e:
+                
+                logger.exception("RAG failure")
+                return {
+                    "status": "error",
+                    "error_type": "RAGRuntimeError",
+                    "message": "Internal RAG error"
+                }

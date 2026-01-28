@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import List , Dict
-from ingestion.pdf_to_markdown import MarkdownLoader
+from src.ingestion.pdf_to_markdown import MarkdownLoader
 from pathlib import Path
 
 def load_documents(path: Path):

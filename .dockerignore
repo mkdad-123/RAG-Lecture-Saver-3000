@@ -1,3 +1,8 @@
+src/ingestion/
+src/tracking/
+src/training/
+
+script.py
 # Environment & secrets
 .env
 .env.*
@@ -36,3 +41,4 @@ dist/
 
 models/
 tests/
+

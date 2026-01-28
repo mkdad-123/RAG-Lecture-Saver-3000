@@ -2,11 +2,11 @@ from pathlib import Path
 import json
 from typing import Union, List
 
-from ingestion.document_loader import load_documents
-from preprocessing.chunker_markdown import chunk_document
-from embedding.embeddings import EmbeddingModel
-from vector_store.FAISS_store import VectorStore
-from mlops.tracking import *
+from src.ingestion.document_loader import load_documents
+from src.preprocessing.chunker_markdown import chunk_document
+from src.embedding.embeddings import EmbeddingModel
+from src.vector_store.FAISS_store import VectorStore
+from src.mlops.tracking import *
 import faiss
 
 def run_ingestion(

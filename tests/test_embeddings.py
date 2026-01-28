@@ -1,4 +1,4 @@
-from embedding.embeddings import EmbeddingModel
+from src.embedding.embeddings import EmbeddingModel
 
 def test_embedding_shape():
     model = EmbeddingModel()

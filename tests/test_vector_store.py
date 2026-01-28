@@ -1,5 +1,5 @@
 import numpy as np
-from vector_store.FAISS_store import VectorStore
+from src.vector_store.FAISS_store import VectorStore
 
 def test_vector_store_search():
     store = VectorStore(dim=3)

@@ -13,9 +13,9 @@ __pycache__/
 .python-version
 
 # 3. FAISS والـ Embedding
-*.faiss
-*.index
-faiss_index/
+# *.faiss
+# *.index
+# faiss_index/
 
 # 4. MLflow (كله لا ترفعه)
 mlflow.db

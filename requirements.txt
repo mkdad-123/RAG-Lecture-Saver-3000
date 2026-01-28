@@ -4,10 +4,5 @@ pydantic
 python-multipart
 sentence-transformers
 faiss-cpu
-mlflow
-pdfplumber
-pytest
 groq
-docling
 langchain-text-splitters
-streamlit
